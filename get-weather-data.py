@@ -36,6 +36,7 @@ def openurluntilok(url):
 	try:
 		return urllib2.urlopen(url)
 	except URLError:
+		print "waiting"
 		time.sleep(2)
 		openurluntilok(url)
 	else:
@@ -48,7 +49,7 @@ noMatchCounter = 0
 leapYear = [2004,2008,2012]
 
 # define regx pattern
-prog = re.compile(r'^((?:\S+\W)+) +(\d*\.\d*) C +(\d*\.\d*) C', re.M)
+prog = re.compile(r'^((?:\w+\W)+) +(\d*\.\d*) C +(\d*\.\d*) C', re.M)
 progmax = re.compile(r'Maximum Air Temperature\s*(\d+\.\d+) C', re.M|re.I)
 progmin = re.compile(r'Minimum Air Temperature\s*(\d+\.\d+) C', re.M|re.I)
 
@@ -59,7 +60,7 @@ header = "DATE,HKO_MAX,HKO_MIN," + ','.join('%s MIN,%s MAX' % (x,x) for x in def
 f.write(header)
 
 # loop all the date
-for y in range(2000,2015):
+for y in range(2001,2015):
 	for m in range(1,13):
 		for d in range(1,32):
 
@@ -98,6 +99,8 @@ for y in range(2000,2015):
 						value = match[1] + ',' + match[2]
 						defaultData[key] = value
 					row = timestamp + ',' + matchMax.group(1) + ',' + matchMin.group(1) + ',' + ','.join('%s' % x for x in defaultData.values()) + '\n'
+				else:
+					print "No match even have data!!"
 			else:
 				print "No match!!"
 				noMatchCounter += 1
@@ -110,4 +113,3 @@ for y in range(2000,2015):
 # finish and close the file
 f.close()
 print "Total number of fail:" + str(noMatchCounter)
-
