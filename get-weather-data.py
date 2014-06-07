@@ -1,7 +1,9 @@
 import urllib2
 import re
+import time
 from BeautifulSoup import BeautifulSoup
 
+# hard code all the monitoring site in a dict
 def init():
 	return {
 	'KING\'S PARK': 'NA,NA',
@@ -29,21 +31,34 @@ def init():
 	'SHAM SHUI PO': 'NA,NA'
 	}
 
+# open url until ok
+def openurluntilok(url):
+	try:
+		return urllib2.urlopen(url)
+	except URLError:
+		time.sleep(2)
+		openurluntilok(url)
+	else:
+		print "wtf!?break!"
+		return None
 
 # open a file for store data
 f = open('weather-data.csv', 'w')
 noMatchCounter = 0
+leapYear = [2004,2008,2012]
 
 # define regx pattern
 prog = re.compile(r'^((?:\S+\W)+) +(\d*\.\d*) C +(\d*\.\d*) C', re.M)
 progmax = re.compile(r'Maximum Air Temperature\s*(\d+\.\d+) C', re.M|re.I)
 progmin = re.compile(r'Minimum Air Temperature\s*(\d+\.\d+) C', re.M|re.I)
-leapYear = [2004,2008,2012]
 
-defaultData = init()
+defaultData = init() # store the temp data for everday
+
+# finish the csv header
 header = "DATE,HKO_MAX,HKO_MIN," + ','.join('%s MIN,%s MAX' % (x,x) for x in defaultData.keys()) + '\n'
 f.write(header)
 
+# loop all the date
 for y in range(2000,2015):
 	for m in range(1,13):
 		for d in range(1,32):
@@ -63,17 +78,20 @@ for y in range(2000,2015):
 			timestamp = ystr + mstr + dstr
 			print "Getting data for " + timestamp
 			url = "http://www.hko.gov.hk/cgi-bin/hko/yes.pl?year=" + ystr + "&month=" + mstr + "&day=" + dstr + "&language=english"
-			page = urllib2.urlopen(url)
+			page = openurluntilok(url)
 
 			# get the data
 			soup = BeautifulSoup(page).findAll('pre')
-			if soup: # check list empty or not
+
+			# check list empty or not
+			if soup:
+				# find the data
 				rawData = soup[0].contents[0]
 				matches = prog.findall(rawData)
 				matchMax = progmax.search(rawData)
 				matchMin = progmin.search(rawData)
 
-				# do sth...
+				# convert them to row data
 				if matches and matchMax and matchMin:
 					for match in matches:
 						key = match[0].upper().strip().strip('\t')
@@ -87,7 +105,6 @@ for y in range(2000,2015):
 
 			# write row to file
 			f.write(row)
-			# init
 			defaultData = init()
 
 # finish and close the file
