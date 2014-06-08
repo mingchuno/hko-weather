@@ -46,7 +46,7 @@ def openurluntilok(url):
 		print "wtf!?break!"
 		return None
 
-# gen date
+# gen date range for looping
 def daterange(start_date, end_date):
 	for n in range(int ((end_date - start_date).days)):
 		yield start_date + datetime.timedelta(n)
@@ -55,17 +55,16 @@ def daterange(start_date, end_date):
 f = open('weather-data.csv', 'w')
 noMatchCounter = 0
 waitCounter = 0
-leapYear = [2004,2008,2012]
 
 # define regx pattern
 prog = re.compile(r'^((?:\w+\W)+) +(\d*\.\d*) C +(\d*\.\d*) C', re.M)
 progMax = re.compile(r'Maximum Air Temperature\s*(\d+\.\d+) C', re.M|re.I)
 progMin = re.compile(r'Minimum Air Temperature\s*(\d+\.\d+) C', re.M|re.I)
 # store the temp data for everday
-defaultData = init() 
+defaultData = init()
 
 # finish the csv header
-header = "DATE,HKO_MAX,HKO_MIN," + ','.join('%s MIN,%s MAX' % (x,x) for x in defaultData.keys()) + '\n'
+header = "DATE,HKO MIN,HKO MAX," + ','.join('%s MIN,%s MAX' % (x,x) for x in defaultData.keys()) + '\n'
 f.write(header)
 
 
@@ -105,7 +104,7 @@ for single_date in daterange(start_date, end_date):
 				key = match[0].upper().strip().strip('\t')
 				value = match[1] + ',' + match[2]
 				defaultData[key] = value
-			row = timestamp + ',' + matchMax.group(1) + ',' + matchMin.group(1) + ',' + ','.join('%s' % x for x in defaultData.values()) + '\n'
+			row = timestamp + ',' + matchMin.group(1) + ',' + matchMax.group(1) + ',' + ','.join('%s' % x for x in defaultData.values()) + '\n'
 			# write row to file
 			f.write(row)
 		else:
@@ -116,7 +115,7 @@ for single_date in daterange(start_date, end_date):
 		noMatchCounter += 1
 
 	defaultData = init()
-	# end for
+	# end for loop
 
 # finish and close the file
 f.close()
