@@ -76,11 +76,6 @@ for single_date in daterange(start_date, end_date):
 	y = single_date.year
 	m = single_date.month
 	d = single_date.day
-	# # check month and leap year
-	# if (m==2 and ((d > 28 and y not in leapYear) or (d > 29 and y in leapYear))):
-	# 	break
-	# elif (m in [4,6,9,11] and d > 30):
-	# 	break
 
 	# convert to str
 	ystr = str(y)
